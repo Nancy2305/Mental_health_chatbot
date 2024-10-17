@@ -1,16 +1,15 @@
 import streamlit as st
 from streamlit_chat import message
 from langchain.chains import ConversationalRetrievalChain
-from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader  
-from langchain_community.embeddings import HuggingFaceEmbeddings  
+from langchain.document_loaders import PyPDFLoader
+from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import FAISS  
+from langchain.vectorstores import FAISS
 from langchain.memory import ConversationBufferMemory
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 import requests
 import os
-
 
 # URL to the PDF file on GitHub
 pdf_url = "https://raw.githubusercontent.com/Nancy2305/Mental_health_chatbot/main/medical_bot_2/mental_health_Document.pdf"
@@ -21,20 +20,15 @@ response = requests.get(pdf_url)
 with open(local_filename, 'wb') as f:
     f.write(response.content)
 
-# Load the PDF using DirectoryLoader
-loader = DirectoryLoader(os.getcwd(), glob="*.pdf", loader_cls=PyPDFLoader)  
+# Load the PDF directly using PyPDFLoader
+loader = PyPDFLoader(local_filename)
 documents = loader.load()
-
 
 if 'history' not in st.session_state:
     st.session_state['history'] = []
 
-# Load the pdf files from the path
-loader = DirectoryLoader(r'mental_health_Document.pdf', glob="*.pdf", loader_cls=PyPDFLoader)
-documents = loader.load()
-
 # Split text into chunks
-text_splitter  = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
 text_chunks = text_splitter.split_documents(documents)
 
 # Create embeddings
@@ -47,14 +41,9 @@ from huggingface_hub import login
 login(token='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')
 
 # Create LLM by loading from Hugging Face directly
-#model_name = "meta-llama/Llama-2-7b-chat-hf"  # Hugging Face model repo name
-#tokenizer = AutoTokenizer.from_pretrained(model_name)
-#model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", torch_dtype=torch.float16)
-# Use a publicly accessible model
 model_name = "facebook/opt-6.7b"  # Open and accessible without gating
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", torch_dtype=torch.float16)
-
 
 # Memory to store chat history
 memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
