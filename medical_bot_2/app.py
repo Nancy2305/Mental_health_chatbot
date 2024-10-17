@@ -6,11 +6,11 @@ from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import FAISS
 from langchain.memory import ConversationBufferMemory
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from langchain.llms import HuggingFacePipeline
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 import torch
 import requests
 import os
-from huggingface_hub import login
 
 # URL to the PDF file on GitHub
 pdf_url = "https://raw.githubusercontent.com/Nancy2305/Mental_health_chatbot/main/medical_bot_2/mental_health_Document.pdf"
@@ -25,7 +25,6 @@ with open(local_filename, 'wb') as f:
 loader = PyPDFLoader(local_filename)
 documents = loader.load()
 
-# Initialize session state for chat history
 if 'history' not in st.session_state:
     st.session_state['history'] = []
 
@@ -34,41 +33,35 @@ text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
 text_chunks = text_splitter.split_documents(documents)
 
 # Create embeddings
-embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2", model_kwargs={'device':"cpu"})
+embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2", model_kwargs={'device': "cpu"})
 
-# Create a vectorstore
+# Vectorstore
 vector_store = FAISS.from_documents(text_chunks, embeddings)
 
-# Log in to Hugging Face
-login(token='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')
+# Load model and tokenizer
+model_name = "facebook/opt-6.7b"  # Open and accessible without gating
+tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-# Load the language model
-try:
-    model_name = "facebook/opt-6.7b"  # Use an open model
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", torch_dtype=torch.float16)
-except Exception as e:
-    st.error(f"Error loading the model: {str(e)}")
+# Create a Hugging Face pipeline for causal language modeling
+model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
+llm_pipeline = pipeline("text-generation", model=model, tokenizer=tokenizer, device=0)
+
+# Wrap the Hugging Face pipeline with LangChain's HuggingFacePipeline
+huggingface_llm = HuggingFacePipeline(pipeline=llm_pipeline)
 
 # Memory to store chat history
 memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
 
-# Create the conversational retrieval chain
-chain = ConversationalRetrievalChain.from_llm(
-    llm=model,
-    chain_type='stuff',
-    retriever=vector_store.as_retriever(search_kwargs={"k": 2}),
-    memory=memory
-)
+# Conversational retrieval chain
+chain = ConversationalRetrievalChain.from_llm(llm=huggingface_llm, chain_type='stuff',
+                                              retriever=vector_store.as_retriever(search_kwargs={"k": 2}),
+                                              memory=memory)
 
 st.title("HealthCare ChatBot 🧑🏽‍⚕️")
 
 def conversation_chat(query):
     try:
-        result = chain({
-            "question": query,
-            "chat_history": memory.load_memory_variables({})['chat_history']
-        })
+        result = chain({"question": query, "chat_history": memory.load_memory_variables({})['chat_history']})
         memory.save_context({"input": query}, {"output": result["answer"]})  # Save context in memory
         st.session_state['history'].append((query, result["answer"]))
         return result["answer"]
