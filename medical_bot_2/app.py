@@ -8,12 +8,28 @@ from langchain.vectorstores import FAISS
 from langchain.memory import ConversationBufferMemory
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
+import requests
+import os
+
+# URL to the PDF file on GitHub
+pdf_url = "https://raw.githubusercontent.com/Nancy2305/Mental_health_chatbot/main/medical_bot_2/mental_health_Document.pdf"
+local_filename = "mental_health_Document.pdf"
+
+# Download the PDF file
+response = requests.get(pdf_url)
+with open(local_filename, 'wb') as f:
+    f.write(response.content)
+
+# Load the PDF using DirectoryLoader
+loader = DirectoryLoader('.', glob="*.pdf", loader_cls=PyPDFLoader)
+documents = loader.load()
+
 
 if 'history' not in st.session_state:
     st.session_state['history'] = []
 
 # Load the pdf files from the path
-loader = DirectoryLoader(r'C:\Users\SKT\Medical_bot', glob="*.pdf", loader_cls=PyPDFLoader)
+loader = DirectoryLoader(r'mental_health_Document.pdf', glob="*.pdf", loader_cls=PyPDFLoader)
 documents = loader.load()
 
 # Split text into chunks
