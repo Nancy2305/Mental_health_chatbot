@@ -1,13 +1,16 @@
-langchain==0.3.2
-torch==2.0.1
-accelerate==0.18.0
-transformers==4.34.0
-sentence-transformers==2.2.2
-streamlit==1.23.0
+langchain==0.3.3
+langchain-community==0.3.2
+torch==2.4.1
+accelerate==1.0.1
+transformers==4.45.2
+sentence-transformers==3.2.0
+streamlit==1.39.0
 streamlit_chat==0.1.1  # Update to a valid version
-faiss-cpu==1.7.3  # Specify a version if necessary
-altair==4.2.0
-tiktoken==0.3.1
-huggingface-hub>=0.16.4,<1.0  # Adjust to match transformers requirements
-pypdf==3.12.0
-requests==2.31.0
+faiss-cpu==1.9.0 # Specify a version if necessary
+altair==5.4.1
+#tiktoken==0.3.1
+huggingface-hub>=0.25.2 # Adjust to match transformers requirements
+pypdf==5.0.1
+pydantic==2.9.2
+requests==2.28.1
+tokenizers==0.20.1
