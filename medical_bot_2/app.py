@@ -1,15 +1,16 @@
 import streamlit as st
 from streamlit_chat import message
 from langchain.chains import ConversationalRetrievalChain
-from langchain.document_loaders import PyPDFLoader, DirectoryLoader
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader  
+from langchain_community.embeddings import HuggingFaceEmbeddings  
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS  
 from langchain.memory import ConversationBufferMemory
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 import requests
 import os
+
 
 # URL to the PDF file on GitHub
 pdf_url = "https://raw.githubusercontent.com/Nancy2305/Mental_health_chatbot/main/medical_bot_2/mental_health_Document.pdf"
@@ -21,7 +22,7 @@ with open(local_filename, 'wb') as f:
     f.write(response.content)
 
 # Load the PDF using DirectoryLoader
-loader = DirectoryLoader('.', glob="*.pdf", loader_cls=PyPDFLoader)
+loader = DirectoryLoader(os.getcwd(), glob="*.pdf", loader_cls=PyPDFLoader)  
 documents = loader.load()
 
 
