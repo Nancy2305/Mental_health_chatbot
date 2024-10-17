@@ -1,9 +1,8 @@
 langchain
 torch
 accelerate
-#bitsandbytes
 transformers
-sentence_transformers
+sentence-transformers
 streamlit
 streamlit_chat
 faiss-cpu
@@ -12,3 +11,4 @@ tiktoken
 huggingface-hub
 langchain-community>=0.1.0
 pypdf
+requests 
