@@ -10,6 +10,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 import requests
 import os
+from huggingface_hub import login
 
 # URL to the PDF file on GitHub
 pdf_url = "https://raw.githubusercontent.com/Nancy2305/Mental_health_chatbot/main/medical_bot_2/mental_health_Document.pdf"
@@ -24,6 +25,7 @@ with open(local_filename, 'wb') as f:
 loader = PyPDFLoader(local_filename)
 documents = loader.load()
 
+# Initialize session state for chat history
 if 'history' not in st.session_state:
     st.session_state['history'] = []
 
@@ -34,30 +36,39 @@ text_chunks = text_splitter.split_documents(documents)
 # Create embeddings
 embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2", model_kwargs={'device':"cpu"})
 
-# Vectorstore
+# Create a vectorstore
 vector_store = FAISS.from_documents(text_chunks, embeddings)
 
-from huggingface_hub import login
+# Log in to Hugging Face
 login(token='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')
 
-# Create LLM by loading from Hugging Face directly
-model_name = "facebook/opt-6.7b"  # Open and accessible without gating
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", torch_dtype=torch.float16)
+# Load the language model
+try:
+    model_name = "facebook/opt-6.7b"  # Use an open model
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", torch_dtype=torch.float16)
+except Exception as e:
+    st.error(f"Error loading the model: {str(e)}")
 
 # Memory to store chat history
 memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
 
-# Conversational retrieval chain
-chain = ConversationalRetrievalChain.from_llm(llm=model, chain_type='stuff',
-                                              retriever=vector_store.as_retriever(search_kwargs={"k": 2}),
-                                              memory=memory)
+# Create the conversational retrieval chain
+chain = ConversationalRetrievalChain.from_llm(
+    llm=model,
+    chain_type='stuff',
+    retriever=vector_store.as_retriever(search_kwargs={"k": 2}),
+    memory=memory
+)
 
 st.title("HealthCare ChatBot 🧑🏽‍⚕️")
 
 def conversation_chat(query):
     try:
-        result = chain({"question": query, "chat_history": memory.load_memory_variables({})['chat_history']})
+        result = chain({
+            "question": query,
+            "chat_history": memory.load_memory_variables({})['chat_history']
+        })
         memory.save_context({"input": query}, {"output": result["answer"]})  # Save context in memory
         st.session_state['history'].append((query, result["answer"]))
         return result["answer"]
