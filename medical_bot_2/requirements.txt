@@ -10,3 +10,4 @@ faiss-cpu
 altair
 tiktoken
 huggingface-hub
+langchain-community>=0.1.0
