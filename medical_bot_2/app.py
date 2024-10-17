@@ -42,9 +42,9 @@ vector_store = FAISS.from_documents(text_chunks, embeddings)
 model_name = "facebook/opt-6.7b"  # Open and accessible without gating
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-# Create a Hugging Face pipeline for causal language modeling
-model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
-llm_pipeline = pipeline("text-generation", model=model, tokenizer=tokenizer, device=0)
+# Create a Hugging Face pipeline for causal language modeling without device_map
+model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
+llm_pipeline = pipeline("text-generation", model=model, tokenizer=tokenizer)
 
 # Wrap the Hugging Face pipeline with LangChain's HuggingFacePipeline
 huggingface_llm = HuggingFacePipeline(pipeline=llm_pipeline)
