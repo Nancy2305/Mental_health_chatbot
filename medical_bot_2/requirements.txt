@@ -1,5 +1,6 @@
 langchain==0.3.3
 langchain-community==0.3.2
+langchain-huggingface==0.1.0
 torch==2.4.1
 accelerate==1.0.1
 transformers==4.45.2
