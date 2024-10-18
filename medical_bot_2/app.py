@@ -1,16 +1,16 @@
 import streamlit as st
 from streamlit_chat import message
-from langchain.chains import ConversationalRetrievalChain
+from langchain_community.llms import HuggingFacePipeline
+from langchain_community.text_splitter import CharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain.llms import HuggingFacePipeline
-from langchain_community.text_splitter import RecursiveCharacterTextSplitter
 from langchain.memory import ConversationBufferMemory
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 import torch
 import requests
 import os
+
 
 
 # URL to the PDF file on GitHub
