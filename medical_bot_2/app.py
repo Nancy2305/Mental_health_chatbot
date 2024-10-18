@@ -13,6 +13,7 @@ import requests
 import os
 
 
+
 # URL to the PDF file on GitHub
 pdf_url = "https://raw.githubusercontent.com/Nancy2305/Mental_health_chatbot/main/medical_bot_2/mental_health_Document.pdf"
 local_filename = "mental_health_Document.pdf"
