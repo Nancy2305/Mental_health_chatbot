@@ -1,12 +1,14 @@
 import streamlit as st
 from streamlit_chat import message
-from langchain.chains import ConversationalRetrievalChain
+from langchain_huggingface import HuggingFacePipeline
+from langchain.memory import ConversationBufferMemory
+#from langchain.chains import ConversationalRetrievalChain
 from langchain.document_loaders import PyPDFLoader
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import FAISS
-from langchain.memory import ConversationBufferMemory
-from langchain.llms import HuggingFacePipeline
+#from langchain.memory import ConversationBufferMemory
+#from langchain.llms import HuggingFacePipeline
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 import torch
 import requests
